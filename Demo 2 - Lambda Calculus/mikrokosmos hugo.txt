@@ -1,0 +1,102 @@
+# https://mroman42.github.io/mikrokosmos/
+# Lambda expressions are written with \ or λ, as in
+#(λx.x)
+#(\x.\y.x)(\x.x)
+#
+## Libraries included
+#plus 2 3
+#sum (cons 1 (cons 2 (cons 3 nil)))
+#
+## Change between untyped and simply-typed λ-calculus
+#:types on
+#swap = \m.(snd m, fst m)
+#swap
+#
+## Gentzen-style deduction trees
+#@@ \a.(snd a,fst a)
+
+# 1 Numbers 0 through 5
+# Numbers
+\f.\x.f(x)
+\f.\x.f(f(x))    
+\f.\x.f(f(f(x)))  
+\f.\x.f(f(f(f(x))))   
+\f.\x.f(f(f(f(f(x)))))
+
+# Successor function
+S = \n.\f.\x.f(n(f)(x))
+S 0
+S 1
+S 2
+S 3
+S 4
+
+# 2 Double, Add, Multiply
+compose = \f.\g.\x.f (g x)
+double = \n.\s.\z.n (compose s s) z
+double 2
+
+add = \m.\n.\s.\z.m (s) (n (s) (z))
+add 2 4
+
+multi = \m.\n.\s.\z.m (n s) z
+#multi 2 5
+
+# 3 True and False
+T = \x.\y.x
+F = \x.\y.y
+
+T 2 4
+F 0 0
+
+# 4 AND, OR, and NOT
+AND = \p.\q.p q F
+AND 0 1
+
+OR = \p.\q.p T q
+OR F T
+
+NOT = \p.p F T
+NOT F
+
+# 5 XOR
+
+XOR = \a.\b.a (b (\a.\b.b) (\a.\b.a)) b
+XOR F T
+XOR T T
+XOR T F
+XOR F F
+XOR T T
+
+# Less than or equal to and greater than or equal to
+:types off
+PRED = \n. \f. \x. n (\g. \h. h (g f)) (\u. x) (\u. u)
+PRED 4
+
+SUB = \a.\b.b PRED a
+SUB 2 3
+
+ISZERO = \n.n (\x.F) T
+LEQ = \x.\y.ISZERO (SUB x y)
+LEQ 3 5
+
+GEQ = \x.\y.((LEQ x y) F)
+GEQ 3 5
+GEQ 3 5
+
+# Y-combinator in Lambda calculus
+YCOMB = \R.(\x.R(xx))(\x.R(xx))
+## GCD
+#
+IF = λp.λx.λy.p x y
+MOD = \m.\n.YCOMB(\f.m IF (LEQ n m) (f (SUB m n)) m) m
+#MOD 3 2
+#recGCD = YCOMB(\R.\x.\y.((R y(x MOD y)) x)
+#
+#
+#
+## List with indexing
+#
+#LIST = \f.\x.x(\f.\x.f(x)(\f.\x.f(f(x))(\f.\x.f(f(f(x))) \f.\x.x)))
+#
+#INDEX = YCOMB(\R.\n.\h.\t. ((R (n-1) t) h)
