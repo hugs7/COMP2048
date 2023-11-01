@@ -12,6 +12,7 @@ __pycache__/
 *.xlsx
 
 **/.idea
+**/.ipynb_checkpoints
 
 # Distribution / packaging
 .Python
