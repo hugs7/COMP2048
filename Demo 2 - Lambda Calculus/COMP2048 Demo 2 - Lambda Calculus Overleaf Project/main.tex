@@ -1,0 +1,428 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{stackengine,scalerel}
+\usepackage{enumitem}
+\usepackage[utf8]{inputenc}
+\usepackage{bm}
+\usepackage{amsmath}
+% \usepackage{amsmath}
+\usepackage{mathtools}% Loads amsmath
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{multicol}
+\usepackage{xcolor}
+\setlength\parindent{0pt}
+\allowdisplaybreaks
+\usepackage{geometry}
+ \geometry{
+ a4paper,
+ total={170mm,257mm},
+ left=17mm,
+ top=20mm,
+ }
+
+\title{COMP2048 Demo 2 - Lambda Calculus}
+\author{Hugo Burton}
+\date{May 2023}
+
+% Footer
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{} 
+\fancyfoot[L]{COMP2048 Demo II}
+\fancyfoot[C]{Hugo Burton}
+\fancyfoot[R]{\thepage}
+\renewcommand{\headrulewidth}{0pt} % Remove the line at the top of the page
+\renewcommand{\footrulewidth}{0.4pt} % Add a line just above the footer
+
+
+\begin{document}
+
+\maketitle
+
+% cmds
+\newcommand{\EE}{\mathbb{E}}
+\newcommand{\PP}{\mathbb{P}}
+\newcommand{\cc}{^{\mathsf{c}}}
+\newcommand{\E}{\ensuremath{\mathbb{E}}}
+\newcommand{\I}{\ensuremath{\mathbb{I}}}
+\newcommand{\R}{\ensuremath{\mathbb{R}}}
+\newcommand{\N}{\ensuremath{\mathbb{N}}}
+\newcommand{\pr}{\ensuremath{\mathbb{P}}}
+\newcommand{\scriptN}{\mathcal{N}}
+\newcommand{\scriptI}{\mathcal{I}}
+
+
+Student Number: s4698512\\
+Due: Week 9 - Practical\\
+Demo on Tuesday due to the public holiday on Monday
+\\
+\\
+
+\section{A - Lambda Calculus with Mikrokosmos (12 Marks)}
+
+\begin{enumerate}
+    \item Define the numbers 0 through 5 with Church encoding using the identify function and the successor function.\\
+    \color{blue}
+    First, define the Church Numerals 0 through 5
+        \begin{align}
+            N_0 &= \lambda f.\lambda x.x    \\
+            N_1 &= \lambda f.\lambda x.f(x)    \\
+            N_2 &= \lambda f.\lambda x.f(f(x))    \\
+            N_3 &= \lambda f.\lambda x.f(f(f(x)))    \\
+            N_4 &= \lambda f.\lambda x.f(f(f(f(x))))    \\
+            N_5 &= \lambda f.\lambda x.f(f(f(f(f(x)))))
+        \end{align}
+
+    Secondly, define the identity function which is the most basic function in lambda calculus:
+    \begin{align}
+        \lambda x.x \\
+        id \\
+        0
+    \end{align}
+
+    Now, define the successor function in lambda calculus. It is given as
+    \[S = \lambda n.\lambda f.\lambda x.f \left(n (f) (x)\right)\]
+
+    One can easily see here how the successor function passed \(f\) into \(n\) so we get \(n\) lots of \(f\). This is is then passed into \(f\) so we increment one before passing \(x\) into this result.\\
+    \\
+    Let's prove that using the successor function with an input of the identity function equals 1.\\
+    \\
+    We know that \(N_0\) is composed of \(\lambda f\) and the identity function. That is \(\lambda f.\lambda x.x\). If we then substitute this into the successor function, we can prove this equals \(N_1\).
+    
+    \begin{align}
+        S_0 &= (\lambda n.\lambda f.\lambda x.f (n (f) (x)))(\lambda f.\lambda x.x) \\
+        &=\lambda f.\lambda x.f ((\lambda f.\lambda x.x) (f) (x))) \\
+        &=\lambda f.\lambda x.f (((\lambda f.\lambda x.x) f) (x))) \\
+        &=\lambda f.\lambda x.f ((\lambda x.x) x)) \\
+        &=\lambda f.\lambda x.f(x) &= N_1
+    \end{align}
+    
+    \bigskip
+    
+    Therefore, the successor function does indeed increment its input by one because I have shown above that it returns the Church Numeral, one more than its input. Using induction, this proves that for all Church numerals, the successor function gives an output one more than the input. \\
+    
+    \color{black}
+    \newpage
+    \item Define separate functions that doubles its argument, adds two numbers, and multiply two numbers.
+    \color{blue}
+
+    \Large \textbf{Doubles}\\
+    \normalsize
+    We can write a function that doubles its input as
+    
+    \[\text{Double} = \lambda n.\lambda s.\lambda z.n (\text{compose } s \hspace{0.125cm} s) z\]
+
+    where \(\text{compose} = \lambda f.\lambda g.\lambda x.f (g \hspace{0.125cm} x)\).\\
+    \\
+    Let's do an example
+    \begin{align}
+        \text{Double } N_2
+        &= (\lambda n.\lambda s.\lambda z.n (\text{compose } s \hspace{0.125cm} s) z) (\lambda f.\lambda x.f(f(x))) \\
+        &= \lambda s.\lambda z.(\lambda f.\lambda x.f(f(x))) (\text{compose } s \hspace{0.125cm} s) z) \\
+        &= \lambda s.\lambda z.(\lambda f.\lambda x.f(f(x))) ((\lambda f.\lambda g.\lambda x.f (g \hspace{0.125cm} x)) s \hspace{0.125cm} s) z) \\
+        &= \lambda s.\lambda z.(\lambda f.\lambda x.f(f(x))) (\lambda x.s(s \hspace{0.125cm} x) z) \\
+        &= \lambda s.\lambda z.(\lambda f.\lambda x.f(f(x))) s(s \hspace{0.125cm} z) \\
+        &= \lambda s.\lambda z.(s(s(s(s \hspace{0.125cm} z)))) \\
+        &= N_4
+    \end{align}
+    
+    \Large \textbf{Add two numbers}\\
+    \normalsize
+    Observe that adding \(m\) to \(n\) is equivalent to saying, take \(m\) successions on the number \(n\). Hence we can use the successor function here, and simply apply it to \(n\), \(m\) times. Again, we have the successor function, \(s\), and zero, \(z\).\\
+    
+    \[\text{Add} = \lambda m.\lambda n.\lambda s.\lambda z.m (s) (n (s) (z))\]
+
+    Let's do an example
+    \begin{align}
+        \text{Add } N_2 \hspace{0.125cm} N_1
+        &= (\lambda m.\lambda n.\lambda s.\lambda z.m (s) (n (s) (z))) \hspace{0.25cm} (\lambda f.\lambda x.f(f(x)) \hspace{0.125cm} \lambda f.\lambda x.(f(x))) \\
+        &= (\lambda n.\lambda s.\lambda z.(\lambda f.\lambda x.f(f(x))) (s) (n (s) (z)))      \hspace{0.25cm} \lambda f.\lambda x.(f(x)) \\
+        &= \lambda s.\lambda z.(\lambda f.\lambda x.f(f(x))) (s) ((\lambda f.\lambda x.(f(x))) (s) (z)) \\
+        &= \lambda s.\lambda z.(\lambda f.\lambda x.f(f(x))) (s) ((\lambda x.(s(x))) z) \\
+        &= \lambda s.\lambda z.(\lambda f.\lambda x.f(f(x))) s (s \hspace{0.125cm} z) \\
+        &= \lambda s.\lambda z.(\lambda f.f(s(s \hspace{0.125cm} z))) s \\
+        &= \lambda s.\lambda z.(s(s(s \hspace{0.125cm} z))) \\
+        &= N_3
+    \end{align}
+
+    \Large \textbf{Multiply two numbers}\\
+    \normalsize
+
+    \[\text{Multiply} := \lambda m.\lambda n.\lambda s.\lambda z.m \hspace{0.125cm} (n \hspace{0.125cm} s) \hspace{0.125cm} z\]
+
+    Let's do an example:
+
+    \begin{align}
+        \text{Multiply } N_2 \hspace{0.125cm} N_3 &= (\lambda m.\lambda n.\lambda s.\lambda z.m \hspace{0.125cm} (n \hspace{0.125cm} s) \hspace{0.125cm} z) \hspace{0.25cm} (\lambda f.\lambda x.f(f(x)) \hspace{0.125cm} \lambda f.\lambda x.f(f(f(x)))) \\
+        &= (\lambda n.\lambda s.\lambda z.(\lambda f.\lambda x.f(f(x))) \hspace{0.125cm} (n \hspace{0.125cm} s) \hspace{0.125cm} z) \hspace{0.25cm} (\lambda f.\lambda x.f(f(x)) \hspace{0.125cm} \lambda f.\lambda x.f(f(f(x)))) \\
+        &= \lambda s.\lambda z.(\lambda f.\lambda x.f(f(x))) \hspace{0.125cm} ((\lambda f.\lambda x.f(f(f(x)))) \hspace{0.125cm} s) \hspace{0.125cm} z \\
+        &= \lambda s.\lambda z.(\lambda f.\lambda x.f(f(x))) \hspace{0.125cm} (\lambda x.s(s(s \hspace{0.125cm} x))) \hspace{0.125cm} z \\
+        &= \lambda s.\lambda z.(\lambda f.\lambda x.f(f(x))) \hspace{0.125cm} s(s(s \hspace{0.125cm} z)) \\
+        &= \lambda s.\lambda z.s(s(s(s(s(s \hspace{0.125cm} z)))) \\
+        &= N_6
+    \end{align}
+    
+    So multiplying 2 and 3 gives us 6.
+    
+    \color{black}
+    \item Define the logical operators true and false in lambda calculus\\
+    \\
+    \color{blue}
+    \Large \textbf{True}\\
+    \normalsize
+    \[T = \lambda x.\lambda y.x\]
+    
+    The true function simply chooses the first of the inputs. So the true function will return true regardless of what the second input is. This is a helpful building block for other functions in \(\lambda\)-calculus.\\
+    
+    \Large \textbf{False}\\
+    \normalsize
+    \[F = \lambda x.\lambda y.y\]
+
+    Similarly, the false function will return the second of its inputs.\\
+    \color{black}
+    \item Define the AND, OR and NOT operators in lambda calculus\\
+    \\
+    \color{blue}
+    \Large \textbf{AND}\\
+    \normalsize
+    \[AND = \lambda p.\lambda q.PqF\]
+
+    If p is true, we get
+    \begin{align}
+        (\lambda p.\lambda q.PqF)T \\
+        \lambda q.TqF \\
+        \lambda q.q \\
+    \end{align}
+    Which leaves \(q\). So if \(q\) is then also true, the output will be true. However, if \(q\) is false, we will get false. This gives the logical and between \(p\) and \(q\).
+    
+    If p is false, we get
+    \begin{align}
+        (\lambda p.\lambda q.PqF)F \\
+        \lambda q.FqF \\
+        F
+    \end{align}
+    Which leaves \(F\) no matter the input of \(q\). This is the case because in logical AND, if one input (\(p\)) is false, the output will be false regardless of what \(q\) is. Therefore, giving the behaviour of a logical AND operator.
+    
+    \bigskip
+    \newpage
+    \Large \textbf{OR}\\
+    \normalsize
+    \[OR = \lambda p.\lambda q.pTq\]
+
+    If p is true, we get\begin{align}
+        &(\lambda p.\lambda q.pTq)T \\
+        &=\lambda q.TTq \\
+        &=T
+    \end{align}
+    Which leaves \(T\) no mater the input from \(q\). This is the case becasue in logical OR, if one input (\(p\)) is true, the output will also be true regardless of that \(q\) is.
+    
+    If p is false, we get
+    \begin{align}
+        & (\lambda p.\lambda q.pTq)F \\
+        &= \lambda q.FTq \\
+        &= \lambda q.q
+    \end{align}
+    Which leaves \(q\). If \(q\) is true, then the output will be true, but because \(p\) is false, if \(q\) is also false, this is the only time the function will output \(F\). Therefore, giving the behaviour of a logical OR operator.
+    
+    \bigskip
+    \Large \textbf{NOT}\\
+    \normalsize
+    \[C = \lambda p.pFT\]
+
+    If p is true, we get \(TFT\) which then chooses the first output, \(F\).
+    If p is false, we get \(FFT\) which then chooses the second output, \(T\).
+    Therefore, NOT simply outputs the negation of it's input.
+
+    \newpage
+    \color{black}
+    \item Define the XOR operator in Lambda calculus\\
+    \\
+    \color{blue}
+    \Large \textbf{XOR}\\
+    \normalsize
+    Just as a reminder, the XOR truth table is given below
+    \begin{center}
+        \begin{tabular}{ |c|c||c| }
+        \hline
+        \textbf{Input 1} & \textbf{Input 2} & \textbf{Output} \\
+        \hline
+        0 & 0 & 0 \\
+        0 & 1 & 1 \\
+        1 & 0 & 1 \\
+        1 & 1 & 0 \\
+        \hline
+        \end{tabular}
+    \end{center}
+
+    That is, XOR is defined as being true only when either or but not both inputs are true.
+    \[XOR:= \lambda a.\lambda b.a \left(b (\lambda a.\lambda b.b) (\lambda a.\lambda b.a)\right) b\]
+
+    As an example, let's find the XOR of inputs 0 and 1. We know
+    \[0 = \lambda f.\lambda x.x\]
+    and
+    \[1 = \lambda f.\lambda x.f(x)\]
+
+    Now,
+    \begin{align}
+        \text{XOR } 0 \hspace{0.125cm} 1
+        &=  (\lambda a.\lambda b.a \left(b (\lambda a.\lambda b.b) (\lambda a.\lambda b.a)\right) b) \hspace{0.25cm} \lambda f.\lambda x.x \hspace{0.125cm} \lambda f.\lambda x.f(x) \\
+        &= (\lambda b.\lambda f.\lambda x.x (b (\lambda a.\lambda b.b) (\lambda a.\lambda b.a)) b) \hspace{0.25cm} \lambda f.\lambda x.f(x) \\
+        &= \lambda f.\lambda x.x ((\lambda f.\lambda x.f \hspace{0.125cm} x) (\lambda a.\lambda b.b) (\lambda a.\lambda b.a)) (\lambda f.\lambda x.f \hspace{0.125cm} x) \\
+        &= \lambda f.\lambda x.x ((\lambda x.\lambda y.y) (\lambda a.\lambda b.b) (\lambda a.\lambda b.a)) (\lambda f.\lambda x.f \hspace{0.125cm} x) \\
+        &= \lambda f.\lambda x.x  (\lambda a.\lambda b.a) (\lambda f.\lambda x.f \hspace{0.125cm} x) \\
+        &= \lambda f.\lambda x.f \hspace{0.125cm} x
+    \end{align}
+    
+    To explain, we first substitute the Church numerals into the function. Next, observe how \(\lambda f.\lambda x.f \hspace{0.125cm} x\) is True
+    
+    \color{black}
+    \newpage
+    \item Define the "less than or equal to" and "greater than or equal to" functions of two arguments\\
+    \\
+    \color{blue}
+    \Large \textbf{Less than or equal to}\\
+    \normalsize
+    As a function of two arguments, less than or equal to can be very simply denoted as
+    \[LEQ(x,y) = \begin{cases} True, & \text{if } x\leq y \\ False, &{if } x > y\end{cases}\]
+    Observe the order of the arguments matter here. It's easiest to read left to right: if \(x\) is less than or equal to \(y\) just as the order of the arguments are given in the function.\\
+    \\
+    In lambda calculus:
+    \[\text{LEQ } = \lambda x.\lambda y.\text{ISZERO } (\text{SUB } x \text{ } y)\]
+    Where
+    \[\text{SUB } = \lambda a.\lambda b.b \text{ PRED } a\]
+    and
+    \[\text{ISZERO } = \lambda n.n (\lambda x.F) T\]
+    and
+    \[\text{PRED } = \lambda n. \lambda f. \lambda x. n (\lambda g. \lambda h. h (g f)) (\lambda u. x) (\lambda u. u)\]
+    
+    \bigskip
+    \Large \textbf{Greater than or equal to}\\
+    \normalsize
+    As a function of two arguments, greater than or equal to can be very simply denoted as
+    \[GEQ(x,y) = \begin{cases} True, & \text{if } x\geq y \\ False, &{if } x < y\end{cases}\]
+
+    In lambda calculus,
+    \[GEQ = \lambda x.\lambda y.\text{ISZERO }(\text{SUB } y \text{ } x)\]
+    
+    \color{black}
+    
+    \item Define the Y-combinator in Lambda calculus and give a brief explanation on how it works.\\
+    \\
+    \color{blue}
+    Y-Combinator also known as the Fixed-Point Combinator.
+    \\
+    If the goal is to produce recursion such as \(f=YR\) for any function \(R\) to be recursive, then \(Y\) is defined as
+
+    \[Y=\lambda R.(\lambda x.R(xx))(\lambda x.R(xx))\]
+
+    Let's show that \(YR = R(YR)\).
+    \begin{align}
+        YR &= (\lambda R.(\lambda x.R(xx))(\lambda x.R(xx)))R \\
+           &= (\lambda x.R(xx))(\lambda x.R(xx)) \\
+           &= R((\lambda x.R(xx))(\lambda x.R(xx))) \\
+           &= R(YR)
+    \end{align}
+    from the second line. Observe that you can continue to expand to get \(YR = R(YR) = R(R(YR)) = \cdots\) so long as we define a base case. For example a boolean combinator ISZERO.\\
+    
+    \color{black}
+    \newpage
+    \item Write a recursive Greatest Common Divisor (GCD) function (see Euclid's Algorithm) using the Y-combinator. [Hint: You might need to use functions you have defined earlier]\\
+    \\
+    \color{blue}
+    Before we get to the \(\lambda\)-calculus part, let's first define Euclid's algorithm simply
+    \begin{enumerate}
+        \item Given two positive integers, \(x\) and \(y\), find the remainder of \(x / y\). That is find \(r = x (\text{mod }y)\).
+        \item If \(r = 0\), then \(y\) is the GCD. Stop and return
+        \item Else, set \(x = y\) and \(y = r\) then repeat from step (a).
+    \end{enumerate}
+    We can start to convert this into lambda calculus as follows
+
+    \[\text{GCD} != Y (\lambda g.\lambda a.\lambda b.((\text{EQ } a \text{ } b) a ((\text{GEQ } a \text{ } b) (g (\text{SUB } a \text{ } b) b)(g (\text{SUB } b \text{ } a) a)))\]
+
+    where
+    \[\text{EQ} = \lambda m.\lambda n(\text{AND }(\text{LEQ } m\text{ } n)(\text{LEQ } n \text{ } m))\]
+
+    LEQ and AND defined above.
+    % \[GCD = \lambda x.\lambda y.\begin{cases} x, & \text{if } y = 0 \\ (\text{GCD } y(a \text{ mod } b)), & \text{else} \end{cases}\]
+
+    % We can then introduce the ISZERO lambda function which is defined as 
+    % \[\text{ISZERO} = \lambda n.n (\lambda x.F) T\]
+
+    % If we then pass the GCD function into the ISZERO function with the first argument being to return \(x\) and the second being the GCD, we get
+    % \[GCD = \lambda x.\lambda y((\text{GCD } y(a \text { mod } b)) \hspace{0.25cm} x)\]
+
+    % We can then use the Y-combinator to define this function properly with lambda calculus.
+    % %\[Y=\lambda R.(\lambda x.R(xx))(\lambda x.R(xx))\]
+    % \[\text{recursive GCD} = Y(\lambda R.\lambda x.\lambda y. ((R \hspace{0.125cm} y(x \text{ mod } y)) \hspace{0.25cm} x)\]
+    \color{black}
+    \item Define a list in Lambda calculus; explain how "indexing" in it works.\\
+    \\
+    \color{blue}
+    We can use an approach similar to the successor function in part 1. Consider a function that takes two arguments. The first one being the head of the list and the second being a pointer to the head of the next list. The last element is always null and this signifies the tail of the list. This forms a structure very similar to a linked list.\\
+    \\
+    For example, a list of the first 4 Church numerals would be
+
+    \begin{align}
+        l&= N_0 (N_1 (N_2 (N_3 \text{ null}))) \\
+        &= \lambda f.\lambda x.x(\lambda f.\lambda x.f(x)(\lambda f.\lambda x.f(f(x))(\lambda f.\lambda x.f(f(f(x))) \text{ null})))
+    \end{align}
+    Where null is simply \(= \lambda f.\lambda x.x = N_0\).\\
+    \\
+    To index into this list, we need to know the position \(n\) that the element we want is at. The index function is then
+
+    \[\text{Index} = \lambda n.\lambda h.\lambda t \begin{cases} h, & \text{if } n = 0 \\ (\text{Index}(n-1) t), & \text{else} \end{cases}\]
+
+    Where \(h\) is the head of the list and \(t\) is the tail. Observe that as we progress down the tree, the list (tail) gets shorter. Then \(h\) is simply the first element in the list.\\
+    \\
+    In a similar fashion to (8), we can use the Y-combinator to write this in proper \(\lambda\)-calculus form.
+
+    \[\text{Index} = Y(\lambda R.\lambda n.\lambda h.\lambda t. ((R \hspace{0.125cm} (n-1) t) \hspace{0.25cm} h)\]
+    \color{black}
+\end{enumerate}
+
+\newpage
+\section{B - Beta Reduction (3 Marks)}
+\bigskip
+\begin{enumerate}
+    \item \((\lambda x.x)(\lambda y.yz)\)
+    \color{blue}
+    \begin{align}
+        (\lambda x.x)(\lambda y.yz) \\
+        \lambda y.yz
+    \end{align}
+    \color{black}
+    \item \((\lambda x.x)(((\lambda x.x))y)\)
+    \color{blue}
+    \begin{align}
+        (\lambda x.x)(((\lambda x.x))y) \\
+        (\lambda x.x)y
+    \end{align}
+    \color{black}
+    \item \((\lambda x.(xy))(\lambda z.z)\)
+    \color{blue}
+    \begin{align}
+        (\lambda x.(xy))(\lambda z.z) \\
+        \lambda z.zy
+    \end{align}
+    \color{black}
+    \item \(((\lambda x.(\lambda y.yx))x)(\lambda z.w)\)
+    \color{blue}
+    \begin{align}
+        ((\lambda x.(\lambda y.yx))x)(\lambda z.w) \\
+        ((\lambda x.\lambda y.yx)x)(\lambda z.w) \\
+        (\lambda y.yx)(\lambda z.w) \\
+        \lambda z.wx
+    \end{align}
+    \color{black}
+    \item \(((\lambda x.(xx))(\lambda x.(xx)))\)
+    \color{blue}
+    \begin{align}
+        ((\lambda x.(xx))(\lambda x.(xx))) \\
+        (\lambda x.(xx)(\lambda x.(xx))
+    \end{align}
+    Cannot be further reduced!
+    \color{black}
+\end{enumerate}
+
+\end{document}
